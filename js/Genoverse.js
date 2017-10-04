@@ -198,11 +198,8 @@ var Genoverse = Base.extend({
 
     this.canChangeChr = !!this.genome;
 
-    if (this.saveable) {
-      this.loadConfig();
-    } else {
-      this.addTracks();
-    }
+    this.loadConfig();
+    this.addTracks();
 
     this.setRange(coords.start, coords.end);
 
@@ -212,6 +209,11 @@ var Genoverse = Base.extend({
   },
 
   loadConfig: function () {
+
+    if (!this.saveable) {
+      return;
+    }
+
     this.defaultTracks = $.extend([], true, this.tracks);
 
     var config = window[this.storageType].getItem(this.saveKey);
@@ -219,7 +221,7 @@ var Genoverse = Base.extend({
     if (config) {
       config = JSON.parse(config);
     } else {
-      return this.addTracks();
+      return;
     }
 
     var tracksByNamespace = Genoverse.getAllTrackTypes();
@@ -283,8 +285,6 @@ var Genoverse = Base.extend({
 
     this.tracks      = tracks;
     this.savedConfig = savedConfig;
-
-    this.addTracks();
   },
 
   saveConfig: function () {
