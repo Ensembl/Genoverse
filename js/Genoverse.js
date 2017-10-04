@@ -32,25 +32,25 @@ var Genoverse = Base.extend({
       return this.die('Your browser does not support this functionality');
     }
 
-    config = config || {};
-
-    config.container = $(config.container); // Make sure container is a jquery object, jquery recognises itself automatically
-
-    if (!(config.container && config.container.length)) {
-      config.container = $('<div>').appendTo('body');
-    }
-
-    config.container.addClass('genoverse').data('genoverse', this);
-
-    $.extend(this, config);
+    $.extend(this, config || {});
 
     this.eventNamespace = '.genoverse.' + (++Genoverse.id);
     this.events         = { browser: {}, tracks: {} };
 
-    $.when(Genoverse.ready, this.loadGenome(), this.loadPlugins()).always(function () {
+    $.when(Genoverse.ready, this.loadContainer(), this.loadGenome(), this.loadPlugins()).always(function () {
       Genoverse.wrapFunctions(browser);
       browser.init();
     });
+  },
+
+  loadContainer: function () {
+    this.container = $(this.container);
+
+    if (!this.container.length) {
+      this.container = $('<div>').appendTo('body');
+    }
+
+    this.container.addClass('genoverse').data('genoverse', this);
   },
 
   loadGenome: function () {
