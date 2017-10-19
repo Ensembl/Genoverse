@@ -199,11 +199,9 @@ var Genoverse = Base.extend({
 
     this.defaultTracks = $.extend([], true, this.tracks);
 
-    var config = window[this.storageType].getItem(this.saveKey);
+    var config = Genoverse.storageGetItem(this.storageType, this.saveKey);
 
-    if (config) {
-      config = JSON.parse(config);
-    } else {
+    if (!config) {
       return;
     }
 
@@ -301,10 +299,7 @@ var Genoverse = Base.extend({
       }
     }
 
-    // Safari in private browsing mode does not allow writes to storage, so wrap in a try/catch to stop errors occuring
-    try {
-      window[this.storageType].setItem(this.saveKey, JSON.stringify(config));
-    } catch (e) {}
+    Genoverse.storageSetItem(this.storageType, this.saveKey, config);
   },
 
   resetConfig: function () {
@@ -316,7 +311,7 @@ var Genoverse = Base.extend({
       unremovableHighlights = $.map(this.tracksById.highlights.prop('featuresById'), function (h) { return h; });
     }
 
-    window[this.storageType].removeItem(this.saveKey);
+    Genoverse.storageRemoveItem(this.storageType, this.saveKey);
 
     this._constructing = true;
     this.savedConfig   = {};
@@ -1576,6 +1571,23 @@ var Genoverse = Base.extend({
       }).appendTo('body');
     }
     return deferred || true;
+  },
+
+  storageGetItem: function(storageType, key) {
+    var data = window[storageType].getItem(key);
+    return data && JSON.parse(data);
+  },
+
+  storageSetItem: function(storageType, key, data) {
+
+    // Safari in private browsing mode does not allow writes to storage, so wrap in a try/catch to stop errors occurring
+    try {
+      window[storageType].setItem(key, JSON.stringify(data));
+    } catch (e) {}
+  },
+
+  storageRemoveItem: function(storageType, key) {
+    window[storageType].removeItem(key);
   }
 });
 
