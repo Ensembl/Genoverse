@@ -36,8 +36,7 @@ var Genoverse = Base.extend({
 
     this.eventNamespace = '.genoverse.' + (++Genoverse.id);
     this.events         = { browser: {}, tracks: {} };
-
-    $.when(Genoverse.ready, this.loadContainer(), this.loadGenome(), this.loadPlugins()).always(function () {
+    $.when(Genoverse.loadMainCSS(), this.loadContainer(), this.loadGenome(), this.loadPlugins()).always(function () {
       Genoverse.wrapFunctions(browser);
       browser.init();
     });
@@ -89,29 +88,13 @@ var Genoverse = Base.extend({
     }
 
     function loadPlugin(plugin) {
-      var css      = Genoverse.origin + 'css/'        + plugin + '.css';
-      var js       = Genoverse.origin + 'js/plugins/' + plugin + '.js';
       var deferred = $.Deferred();
-
-      function getCSS() {
-        function done() {
-          browser.loadedPlugins[plugin] = browser.loadedPlugins[plugin] || 'script';
-          deferred.resolve(plugin);
-        }
-
-        if (Genoverse.Plugins[plugin].noCSS || $('link[href="' + css + '"]').length) {
-          return done();
-        }
-
-        $('<link href="' + css + '" rel="stylesheet">').on('load', done).appendTo('body');
-      }
-
-      if (browser.loadedPlugins[plugin] || $('script[src="' + js + '"]').length) {
-        getCSS();
-      } else {
-        $.getScript(js, getCSS);
-      }
-
+      $.when(!browser.loadedPlugins[plugin] && Genoverse.loadPluginJS(plugin)).then(function() {
+        return !Genoverse.Plugins[plugin].noCSS && Genoverse.loadPluginCSS(plugin);
+      }).done(function() {
+        browser.loadedPlugins[plugin] = browser.loadedPlugins[plugin] || 'script';
+        deferred.resolve(plugin);
+      });
       return deferred;
     }
 
@@ -1419,7 +1402,6 @@ var Genoverse = Base.extend({
   }
 }, {
   id      : 0,
-  ready   : $.Deferred(),
   origin  : (($('script[src]').filter(function () { return /\/(?:Genoverse|genoverse\.min.*)\.js$/.test(this.src); }).attr('src') || '').match(/(.*)js\/\w+/) || [])[1] || '',
   Genomes : {},
   Plugins : {},
@@ -1560,14 +1542,40 @@ var Genoverse = Base.extend({
     }
 
     return namespaces[0];
-  }
-});
+  },
 
-$(function () {
-  if ($('link[href^="' + Genoverse.origin + 'css/genoverse.css"]').length) {
-    Genoverse.ready.resolve();
-  } else {
-    $('<link href="' + Genoverse.origin + 'css/genoverse.css" rel="stylesheet">').appendTo('body').on('load', Genoverse.ready.resolve);
+  loadPluginJS: function(plugin) {
+    var js = Genoverse.origin + 'js/plugins/' + plugin + '.js';
+
+    if (!$('script[src="' + js + '"]').length) {
+      return $.ajax({
+        url: js,
+        dataType: 'script',
+        cache: true,
+      });
+    }
+  },
+
+  loadPluginCSS: function(plugin) {
+    return Genoverse.loadCSS(Genoverse.origin + 'css/' + plugin + '.css');
+  },
+
+  loadMainCSS: function() {
+    Genoverse._mainCSSLoaded = Genoverse._mainCSSLoaded || Genoverse.loadCSS(Genoverse.origin + 'css/genoverse.css');
+    return Genoverse._mainCSSLoaded;
+  },
+
+  loadCSS: function(url) {
+    var deferred;
+
+    if (!$('link[href^="' + url + '"]').length) {
+      deferred = $.Deferred();
+      $('<link href="' + url + '" rel="stylesheet">').on('load.genoverse', {deferred : deferred}, function(e) {
+        $(this).off('.genoverse');
+        e.data.deferred.resolve();
+      }).appendTo('body');
+    }
+    return deferred || true;
   }
 });
 
