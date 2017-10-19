@@ -460,6 +460,11 @@ var Genoverse = Base.extend({
     };
 
     $(document).on(documentEvents);
+
+    this.addPopStateEvent();
+  },
+
+  addPopStateEvent: function() {
     $(window).on((this.useHash ? 'hashchange' : 'popstate') + this.eventNamespace, $.proxy(this.popState, this));
   },
 
