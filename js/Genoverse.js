@@ -1596,6 +1596,8 @@ var Genoverse = Base.extend({
   }
 });
 
+$(Genoverse.loadMainCSS);
+
 window.Genoverse = Genoverse;
 
 if (typeof module === 'object' && typeof module.exports === 'object') {
