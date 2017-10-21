@@ -73,7 +73,6 @@ Genoverse.Track.Controller = Base.extend({
     this.imgContainer     = $('<div class="gv-image-container">').width(this.width).addClass(this.prop('invert') ? 'gv-invert' : '');
     this.messageContainer = $('<div class="gv-message-container"><div class="gv-messages"></div><i class="gv-control gv-collapse fa fa-angle-double-left"></i><i class="gv-control gv-expand fa fa-angle-double-right"></i></div>').appendTo(this.container);
     this.label            = $('<li>').appendTo(this.browser.labelContainer).height(this.prop('height')).data('track', this.track);
-    this.context          = $('<canvas>')[0].getContext('2d');
 
     if (this.prop('border')) {
       $('<div class="gv-track-border">').appendTo(this.container);
@@ -529,8 +528,8 @@ Genoverse.Track.Controller = Base.extend({
         features       = this.view.positionFeatures(this.view.scaleFeatures(features, params.scale), params); // positionFeatures alters params.featureHeight, so this must happen before the canvases are created
     var featureCanvas  = $('<canvas>').attr({ width: params.width, height: params.featureHeight || 1 });
     var labelCanvas    = this.prop('labels') === 'separate' && params.labelHeight ? featureCanvas.clone().attr('height', params.labelHeight) : featureCanvas;
-    var featureContext = featureCanvas[0].getContext('2d');
-    var labelContext   = labelCanvas[0].getContext('2d');
+    var featureContext = this.getDPRScaledContext(featureCanvas[0]);
+    var labelContext   = this.getDPRScaledContext(labelCanvas[0]);
 
     featureContext.font = labelContext.font = this.prop('font');
 
@@ -555,7 +554,7 @@ Genoverse.Track.Controller = Base.extend({
 
   renderBackground: function (features, img, height) {
     var canvas = $('<canvas>').attr({ width: this.width, height: height || 1 })[0];
-    this.view.drawBackground(features, canvas.getContext('2d'), img.data());
+    this.view.drawBackground(features, this.getDPRScaledContext(canvas), img.data());
     img.attr('src', canvas.toDataURL());
     canvas = img = null;
   },
@@ -579,6 +578,18 @@ Genoverse.Track.Controller = Base.extend({
     }
 
     return $.extend(menu, f);
+  },
+
+  getDPRScaledContext: function(canvas) {
+    var dpr = this.browser.devicePixelRatio;
+    var ctx = canvas.getContext('2d');
+    if (dpr > 1 && !canvas.dprFixed) {
+      canvas.dprFixed = true;
+      canvas.height = canvas.height * dpr;
+      canvas.width = canvas.width * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    return ctx;
   },
 
   abort: function () {

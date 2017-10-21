@@ -19,6 +19,7 @@ var Genoverse = Base.extend({
   hideEmptyTracks    : true,             // Determines whether to hide an automatically resized tracks if it has no features, or to show it empty (can be overridden by track.hideEmpty)
   genome             : undefined,        // The genome used in the browser - can be an object or a string, which will be used to obtain a javascript file
   useHash            : undefined,        // If true, window.location.hash is changed on navigation. If false, window.history.pushState is used. If undefined, pushState will be used if present in the browser
+  fixDPR             : true,             // If true, will set canvas size and scale according to devicePixelRatio for high res screens
 
   // Default coordinates for initial view, overwrite in your config
   chr   : 1,
@@ -161,6 +162,7 @@ var Genoverse = Base.extend({
     this.saveKey          = this.saveKey ? 'genoverse-' + this.saveKey : 'genoverse';
     this.urlParamTemplate = this.urlParamTemplate || '';
     this.useHash          = typeof this.useHash === 'boolean' ? this.useHash : typeof window.history.pushState !== 'function';
+    this.devicePixelRatio = this.fixDPR && window.devicePixelRatio || 1;
     this.textWidth        = document.createElement('canvas').getContext('2d').measureText('W').width;
     this.labelWidth       = this.labelContainer.outerWidth(true);
     this.width           -= this.labelWidth;

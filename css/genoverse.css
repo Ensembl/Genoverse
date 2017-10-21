@@ -128,6 +128,7 @@
 .gv-canvas-container .gv-image-container img {
   position: absolute;
   z-index: 1;
+  width: 100%;
 }
 
 .gv-canvas-container .gv-image-container img.gv-data {
@@ -137,7 +138,6 @@
 .gv-canvas-container .gv-image-container img.gv-bg {
   display: block;
   z-index: 0;
-  width: 100%;
 }
 
 .gv-canvas-container .gv-image-container img.gv-full-height {
