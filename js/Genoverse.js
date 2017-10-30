@@ -146,6 +146,7 @@ var Genoverse = Base.extend({
   },
 
   init: function () {
+    var browser = this;
     var width = this.width;
 
     this.addDomElements(width);
@@ -183,17 +184,18 @@ var Genoverse = Base.extend({
 
     this.canChangeChr = !!this.genome;
 
-    this.loadConfig();
-    this.addTracks();
+    $.when(this.loadConfig()).always(function() {
+      browser.addTracks();
+      browser.setRange(coords.start, coords.end);
 
-    this.setRange(coords.start, coords.end);
-
-    if (this.highlights.length) {
-      this.addHighlights(this.highlights);
-    }
+      if (browser.highlights.length) {
+        browser.addHighlights(browser.highlights);
+      }
+    });
   },
 
   loadConfig: function () {
+    var browser = this;
 
     if (!this.saveable) {
       return;
@@ -201,7 +203,12 @@ var Genoverse = Base.extend({
 
     this.defaultTracks = $.extend([], true, this.tracks);
 
-    var config = this.storageGetItem(this.saveKey);
+    return $.when(this.storageGetItem(this.saveKey)).then(function(config) {
+      browser.applyConfig(config);
+    });
+  },
+
+  applyConfig: function (config) {
 
     if (!config) {
       return;
