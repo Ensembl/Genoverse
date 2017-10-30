@@ -201,7 +201,7 @@ var Genoverse = Base.extend({
 
     this.defaultTracks = $.extend([], true, this.tracks);
 
-    var config = Genoverse.storageGetItem(this.storageType, this.saveKey);
+    var config = this.storageGetItem(this.saveKey);
 
     if (!config) {
       return;
@@ -301,7 +301,7 @@ var Genoverse = Base.extend({
       }
     }
 
-    Genoverse.storageSetItem(this.storageType, this.saveKey, config);
+    this.storageSetItem(this.saveKey, config);
   },
 
   resetConfig: function () {
@@ -313,7 +313,7 @@ var Genoverse = Base.extend({
       unremovableHighlights = $.map(this.tracksById.highlights.prop('featuresById'), function (h) { return h; });
     }
 
-    Genoverse.storageRemoveItem(this.storageType, this.saveKey);
+    this.storageRemoveItem(this.saveKey);
 
     this._constructing = true;
     this.savedConfig   = {};
@@ -1328,6 +1328,23 @@ var Genoverse = Base.extend({
     this.tracksById.highlights.addHighlights(highlights);
   },
 
+  storageGetItem: function(key) {
+    var data = window[this.storageType].getItem(key);
+    return data && JSON.parse(data);
+  },
+
+  storageSetItem: function(key, data) {
+
+    // Safari in private browsing mode does not allow writes to storage, so wrap in a try/catch to stop errors occurring
+    try {
+      window[this.storageType].setItem(key, JSON.stringify(data));
+    } catch (e) {}
+  },
+
+  storageRemoveItem: function(key) {
+    window[this.storageType].removeItem(key);
+  },
+
   on: function (events, obj, fn, once) {
     var browser  = this;
     var eventMap = {};
@@ -1578,23 +1595,6 @@ var Genoverse = Base.extend({
       }).appendTo('body');
     }
     return deferred || true;
-  },
-
-  storageGetItem: function(storageType, key) {
-    var data = window[storageType].getItem(key);
-    return data && JSON.parse(data);
-  },
-
-  storageSetItem: function(storageType, key, data) {
-
-    // Safari in private browsing mode does not allow writes to storage, so wrap in a try/catch to stop errors occurring
-    try {
-      window[storageType].setItem(key, JSON.stringify(data));
-    } catch (e) {}
-  },
-
-  storageRemoveItem: function(storageType, key) {
-    window[storageType].removeItem(key);
   }
 });
 
