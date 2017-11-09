@@ -178,13 +178,7 @@ var Genoverse = Base.extend({
 
     this.chr = coords.chr;
 
-    if (this.genome) {
-      this.chromosomeSize = this.genome[this.chr].size;
-    }
-
-    this.canChangeChr = !!this.genome;
-
-    $.when(this.loadConfig()).always(function() {
+    $.when(this.setChromosomeSize(), this.loadConfig()).always(function() {
       browser.addTracks();
       browser.setRange(coords.start, coords.end);
 
@@ -192,6 +186,14 @@ var Genoverse = Base.extend({
         browser.addHighlights(browser.highlights);
       }
     });
+  },
+
+  setChromosomeSize: function() {
+    this.canChangeChr = !!this.genome;
+
+    if (this.genome && this.genome[this.chr]) {
+      this.chromosomeSize = this.genome[this.chr].size;
+    }
   },
 
   loadConfig: function () {
