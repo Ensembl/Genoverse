@@ -1508,7 +1508,15 @@ var Genoverse = Base.extend({
         rtn = this.functions[key].apply(this, args);
       }
 
-      trigger.call(this, 'after');
+      if (rtn && typeof rtn === 'object' && typeof rtn.then === 'function') {
+        rtn = (function (deferred, context) {
+          return deferred.then(function() {
+            trigger.call(context, 'after');
+          })
+        })(rtn, this);
+      } else {
+        trigger.call(this, 'after');
+      }
 
       if (mainObj.debug === 'time' || (typeof mainObj.debug === 'object' && mainObj.debug[key])) {
         console.timeEnd('time: ' + debug);
