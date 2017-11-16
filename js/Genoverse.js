@@ -178,7 +178,7 @@ var Genoverse = Base.extend({
 
     this.chr = coords.chr;
 
-    $.when(this.setChromosomeSize(), this.loadConfig()).always(function() {
+    return $.when(this.setChromosomeSize(), this.loadConfig()).always(function() {
       browser.addTracks();
       browser.setRange(coords.start, coords.end);
 
